@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    url: jdbc:tc:postgresql://localhost/gprocdb?stringtype=unspecified
+    username: gprocuser
+    password: gprocpass
+    hikari:
+      maximum-pool-size: 4
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+  flyway:
+    locations:
+      - classpath:db/migration/
+      - classpath:db/migration/test
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+    default-property-inclusion: NON_EMPTY
+    deserialization.fail-on-unknown-properties: false
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
