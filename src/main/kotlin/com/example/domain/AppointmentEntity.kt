@@ -4,7 +4,8 @@ import java.time.LocalDateTime
 import javax.persistence.*
 
 @Entity
-data class Appointment(
+@Table(name = "appointment")
+data class AppointmentEntity(
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -16,9 +17,9 @@ data class Appointment(
 
         val private: Boolean,
 
-        @ManyToOne
-        val patient: Patient,
+        @ManyToOne(cascade = [CascadeType.REFRESH])
+        val doctor: DoctorEntity,
 
-        @ManyToOne
-        val doctor: Doctor
+        @Version
+        val version: Long
 )
