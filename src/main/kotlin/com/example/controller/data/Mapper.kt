@@ -10,7 +10,7 @@ fun AppointmentEntity.asQueryResponse() =
             name = this.name,
             email = this.email,
             private = this.private,
-            doctorName = this.doctor.name
+            doctorName = this.doctor?.name
         )
 
 fun Appointment.asEntity(givenId: Long? = null, givenVersion: Long = 0) =

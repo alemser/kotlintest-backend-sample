@@ -1,20 +1,18 @@
 package com.example.controller.data
 
 import java.time.LocalDateTime
+import javax.validation.constraints.Email
 import javax.validation.constraints.Future
-import javax.validation.constraints.NotBlank
+import javax.validation.constraints.NotNull
 
 data class Appointment (
-    @Future
-    val date: LocalDateTime,
+    val date: LocalDateTime? = null,
 
-    @NotBlank
-    val name: String,
+    val name: String? = null,
 
-    @NotBlank
-    val email: String,
+    val email: String? = null,
 
     val private: Boolean = false,
 
-    val doctorId: Long
+    val doctorId: Long? = null
 )

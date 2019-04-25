@@ -11,17 +11,17 @@ data class AppointmentEntity(
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         val id: Long? = null,
 
-        val date: LocalDateTime,
+        val date: LocalDateTime? = null,
 
-        val name: String,
+        val name: String? = null,
 
-        val email: String,
+        val email: String? = null,
 
-        val private: Boolean,
+        val private: Boolean = false,
 
         @ManyToOne(cascade = [CascadeType.REFRESH])
-        val doctor: DoctorEntity,
+        val doctor: DoctorEntity? = null,
 
         @Version
-        val version: Long
+        val version: Long? = null
 )

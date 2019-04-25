@@ -25,6 +25,11 @@ dependencies {
 	implementation 'org.jetbrains.kotlin:kotlin-reflect'
 	implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
 
+	implementation 'org.hibernate.validator:hibernate-validator:6.0.2.Final'
+	implementation 'org.hibernate.validator:hibernate-validator-annotation-processor:6.0.2.Final'
+	implementation 'javax.el:javax.el-api:3.0.0'
+	implementation 'org.glassfish:javax.el:3.0.0'
+
 	//database migration tool and driver
 	implementation 'org.flywaydb:flyway-core'
 	runtimeOnly 'org.postgresql:postgresql'

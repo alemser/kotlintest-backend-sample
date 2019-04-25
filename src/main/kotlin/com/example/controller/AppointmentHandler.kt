@@ -3,7 +3,6 @@ package com.example.controller
 import com.example.controller.data.Appointment
 import com.example.controller.data.asEntity
 import com.example.controller.data.asQueryResponse
-import com.example.domain.AppointmentEntity
 import com.example.repository.AppointmentRepository
 import com.example.service.EmailService
 import org.springframework.stereotype.Component
@@ -12,23 +11,32 @@ import org.springframework.web.reactive.function.server.ServerResponse.*
 import reactor.core.publisher.Mono
 import reactor.core.publisher.switchIfEmpty
 import java.util.concurrent.CompletableFuture.supplyAsync
-import java.util.concurrent.Executors
-import java.util.function.Supplier
 import org.springframework.web.util.UriComponentsBuilder.fromPath
 import java.time.LocalDateTime
+import javax.validation.ConstraintViolationException
+import javax.validation.Validator
 
 @Component
-class AppointmentHandler(val repository: AppointmentRepository, val emailService: EmailService) {
-
-    private val executor = Executors.newWorkStealingPool()
+class AppointmentHandler(val repository: AppointmentRepository,
+                         val emailService: EmailService,
+                         val validator: Validator) {
 
     fun create(req: ServerRequest) =
             req.bodyToMono(Appointment::class.java)
-                    .map { it.asEntity() }
+                    .map {
+                        val violations = validator.validate(it)
+                        if (violations.isEmpty()) {
+                            it.asEntity()
+                        } else {
+                            throw ConstraintViolationException(violations)
+                        }
+                    }
                     .flatMap {
                         deferAsFuture { repository.saveAndFlush(it) }
                     }
-                    .doOnError { it.printStackTrace() }
+                    .doOnSuccess {
+                        emailService.send(it.email!!, "Appointment confirmation", "Your appointment is confirmed to ${it.date}")
+                    }
                     .flatMap {
                         val location = fromPath("/appointments/{id}").buildAndExpand(it.id).toUri()
                         created(location)
