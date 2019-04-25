@@ -1,9 +1,9 @@
 spring:
   datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${DBURL}
-    username: ${DBPASS}
-    password: ${DBUSER}
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+    url: jdbc:tc:postgresql://localhost/testdb?stringtype=unspecified
+    username: pguser
+    password: pgpass
     hikari:
       maximum-pool-size: 4
   jpa:
@@ -16,6 +16,7 @@ spring:
   flyway:
     locations:
       - classpath:db/migration/
+      - classpath:db/migration-test
   jackson:
     property-naming-strategy: SNAKE_CASE
     default-property-inclusion: NON_EMPTY

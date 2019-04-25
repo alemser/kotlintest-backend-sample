@@ -5,6 +5,7 @@ import com.example.controller.data.asEntity
 import com.example.controller.data.asQueryResponse
 import com.example.domain.AppointmentEntity
 import com.example.repository.AppointmentRepository
+import com.example.service.EmailService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse.*
@@ -17,19 +18,23 @@ import org.springframework.web.util.UriComponentsBuilder.fromPath
 import java.time.LocalDateTime
 
 @Component
-class AppointmentHandler(val repository: AppointmentRepository) {
+class AppointmentHandler(val repository: AppointmentRepository, val emailService: EmailService) {
 
     private val executor = Executors.newWorkStealingPool()
 
-    fun create(req: ServerRequest) = req.bodyToMono(AppointmentEntity::class.java)
-            .flatMap {
-                deferAsFuture { repository.save(it) }
-            }.flatMap {
-                val location = fromPath("/appointments/{id}").buildAndExpand(it.id).toUri()
-                created(location)
-                        .eTag(it.version.toString())
-                        .syncBody(it)
-            }
+    fun create(req: ServerRequest) =
+            req.bodyToMono(Appointment::class.java)
+                    .map { it.asEntity() }
+                    .flatMap {
+                        deferAsFuture { repository.saveAndFlush(it) }
+                    }
+                    .doOnError { it.printStackTrace() }
+                    .flatMap {
+                        val location = fromPath("/appointments/{id}").buildAndExpand(it.id).toUri()
+                        created(location)
+                                .eTag(it.version.toString())
+                                .build()
+                    }
 
     fun update(req: ServerRequest) = req.bodyToMono(Appointment::class.java)
             .map {

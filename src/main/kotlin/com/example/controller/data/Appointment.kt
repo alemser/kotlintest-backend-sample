@@ -11,6 +11,9 @@ data class Appointment (
     @NotBlank
     val name: String,
 
+    @NotBlank
+    val email: String,
+
     val private: Boolean = false,
 
     val doctorId: Long

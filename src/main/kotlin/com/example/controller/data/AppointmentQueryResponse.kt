@@ -7,6 +7,7 @@ class AppointmentQueryResponse (
     val id: Long,
     val date: LocalDateTime,
     val name: String,
+    val email: String,
     val private: Boolean,
     val doctorName: String
 

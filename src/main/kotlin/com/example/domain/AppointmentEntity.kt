@@ -9,11 +9,13 @@ data class AppointmentEntity(
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        val id: Long,
+        val id: Long? = null,
 
         val date: LocalDateTime,
 
         val name: String,
+
+        val email: String,
 
         val private: Boolean,
 
