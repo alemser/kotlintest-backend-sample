@@ -1,32 +1,39 @@
 package com.example.appointments
 
 import com.example.Application
-import com.example.appointments.stub.TestEmailService
 import com.example.controller.data.Appointment
+import com.example.repository.AppointmentRepository
 import com.example.service.EmailService
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.nhaarman.mockitokotlin2.argumentCaptor
 import io.kotlintest.specs.StringSpec
 import io.kotlintest.tables.row
 import io.kotlintest.data.forall
-import io.kotlintest.matchers.string.beBlank
 import io.kotlintest.shouldBe
 import io.restassured.RestAssured
 import io.restassured.RestAssured.given
+import org.flywaydb.core.Flyway
 import org.hamcrest.Matchers.*
+import org.mockito.Mockito.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
-import java.time.LocalDateTime
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import java.time.LocalDateTime.now
 
 @SpringBootTest(classes = [Application::class], webEnvironment = RANDOM_PORT)
 class AppointmentPostIT(val mapper: ObjectMapper,
                         val emailService: EmailService,
+                        val appointmentRepository: AppointmentRepository,
+                        flyway: Flyway,
                         @Value("\${local.server.port}") port: String) : StringSpec() {
 
     init {
         RestAssured.port = port.toInt()
         RestAssured.baseURI = "http://localhost"
+
+        val locationIdRegex = """(?<=\/)([^\/]+)${'$'}""".toRegex()
 
         "should create a new appointment" {
             forall (
@@ -40,24 +47,76 @@ class AppointmentPostIT(val mapper: ObjectMapper,
                         .basePath("/api")
                         .contentType("application/json")
                         .body( mapper.writeValueAsString(appointment) )
+                            .expect()
+                            .statusCode(expStatus)
                     .`when`()
                         .post("/appointments")
-                    .then()
-                        .statusCode(expStatus)
 
-                if (expStatus == 201) {
-                    expHeaders.forEach { response.header(it, notNullValue()) }
-                    response.body(equalTo(expMessage))
+
+                if (response.statusCode == 201) {
+                    expHeaders.forEach {
+                        response
+                            .then()
+                            .header(it, notNullValue())
+                    }
+
+                    response
+                            .then()
+                            .body(equalTo(expMessage))
+
+
+                    val match = locationIdRegex.find(response.header("Location"))
+                    val id = match?.value
+                    val storedAppointment = appointmentRepository.getOne(id?.toLong()!!)
+                    with(storedAppointment) {
+                        date shouldBe appointment.date
+                        email shouldBe appointment.email
+                        name shouldBe appointment.name
+                        doctor?.id shouldBe appointment.doctorId
+                        private shouldBe appointment.private
+                    }
 
                 } else {
-                    response.body(containsString(expMessage))
+                    response
+                            .then()
+                            .body(containsString(expMessage))
                 }
             }
         }
 
+        "should send an email tp patient" {
+            given()
+                    .basePath("/api")
+                    .contentType("application/json")
+                    .body( mapper.writeValueAsString(goodApointment) )
+                    .`when`()
+                    .post("/appointments")
+                    .then()
+                    .statusCode(201)
+
+            val captorTo = argumentCaptor<String>()
+            val captorSubj = argumentCaptor<String>()
+            val captorBody = argumentCaptor<String>()
+            verify(emailService, atLeastOnce()).send(captorTo.capture(), captorSubj.capture(), captorBody.capture())
+
+            captorTo.firstValue shouldBe goodApointment.email
+            captorSubj.firstValue shouldBe "Appointment confirmation"
+            captorBody.firstValue shouldBe "Your appointment is confirmed to ${goodApointment.date}"
+        }
+
+        flyway.clean()
+        flyway.migrate()
     }
 
     val goodApointment = Appointment(now(), "Ella Fitzgerald", "ella@ella.com", true, 1)
     val badEmailApointment = goodApointment.copy(email = "")
     val badDoctorApointment = goodApointment.copy(doctorId = 99)
+
+    companion object {
+        @Configuration
+        internal class ContextConfiguration {
+            @Bean
+            fun emailService() = mock(EmailService::class.java)
+        }
+    }
 }
