@@ -8,7 +8,7 @@ plugins {
 apply plugin: 'io.spring.dependency-management'
 
 group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0'
 sourceCompatibility = '1.8'
 
 repositories {
@@ -24,11 +24,6 @@ dependencies {
 	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
 	implementation 'org.jetbrains.kotlin:kotlin-reflect'
 	implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
-
-	implementation 'org.hibernate.validator:hibernate-validator:6.0.2.Final'
-	implementation 'org.hibernate.validator:hibernate-validator-annotation-processor:6.0.2.Final'
-	implementation 'javax.el:javax.el-api:3.0.0'
-	implementation 'org.glassfish:javax.el:3.0.0'
 
 	//database migration tool and driver
 	implementation 'org.flywaydb:flyway-core'
@@ -47,8 +42,6 @@ dependencies {
 
 	// test container for postgres
 	testCompile 'org.testcontainers:postgresql:1.11.1'
-
-	testImplementation 'io.projectreactor:reactor-test'
 }
 
 bootRun {
