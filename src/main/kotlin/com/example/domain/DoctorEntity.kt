@@ -3,14 +3,14 @@ package com.example.domain
 import javax.persistence.*
 
 @Entity
-data class Patient(
+@Table(name = "doctor")
+data class DoctorEntity(
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        val id: Long,
+        val id: Long? = null,
 
         val name: String,
 
-        @ManyToOne
-        @JoinColumn(name = "doctor_id")
-        val preferredDoctor: Doctor
+        @Version
+        val version: Long
 )

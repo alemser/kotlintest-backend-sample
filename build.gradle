@@ -25,6 +25,11 @@ dependencies {
 	implementation 'org.jetbrains.kotlin:kotlin-reflect'
 	implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
 
+	implementation 'org.hibernate.validator:hibernate-validator:6.0.2.Final'
+	implementation 'org.hibernate.validator:hibernate-validator-annotation-processor:6.0.2.Final'
+	implementation 'javax.el:javax.el-api:3.0.0'
+	implementation 'org.glassfish:javax.el:3.0.0'
+
 	//database migration tool and driver
 	implementation 'org.flywaydb:flyway-core'
 	runtimeOnly 'org.postgresql:postgresql'
@@ -36,6 +41,9 @@ dependencies {
 	//kotlintest and restassured
 	testImplementation 'io.kotlintest:kotlintest-runner-junit5:3.3.1'
 	testCompile 'io.rest-assured:rest-assured:3.3.0'
+
+	// makes things smoother for Kotlin and Mockito
+	testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:2.1.0'
 
 	// test container for postgres
 	testCompile 'org.testcontainers:postgresql:1.11.1'

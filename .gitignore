@@ -20,3 +20,5 @@ HELP.md
 *.ipr
 /out/
 
+.DStore
+
