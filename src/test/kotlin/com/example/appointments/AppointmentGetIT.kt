@@ -7,14 +7,14 @@ import io.kotlintest.data.forall
 import io.restassured.RestAssured
 import io.restassured.RestAssured.given
 import org.hamcrest.Matchers.*
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.boot.web.server.LocalServerPort
 import java.time.LocalDateTime
 import java.time.LocalDateTime.now
 
 @SpringBootTest(classes = [Application::class], webEnvironment = RANDOM_PORT)
-class AppointmentGetIT(@Value("\${local.server.port}") port: String) : StringSpec() {
+class AppointmentGetIT(@LocalServerPort port: String) : StringSpec() {
 
     init {
         RestAssured.port = port.toInt()

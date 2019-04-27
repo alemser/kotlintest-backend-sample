@@ -23,19 +23,14 @@ class AppointmentHandler(val repository: AppointmentRepository,
 
     fun create(req: ServerRequest) =
             req.bodyToMono(Appointment::class.java)
-                    .map {
-                        val violations = validator.validate(it)
-                        if (violations.isEmpty()) {
-                            it.asEntity()
-                        } else {
-                            throw ConstraintViolationException(violations)
-                        }
-                    }
+                    .map { it.asEntity() }
                     .flatMap {
                         deferAsFuture { repository.saveAndFlush(it) }
                     }
                     .doOnSuccess {
-                        emailService.send(it.email!!, "Appointment confirmation", "Your appointment is confirmed to ${it.date}")
+                        emailService.send(it.email!!, "Appointment confirmation",
+                                "Your appointment is confirmed to ${it.date}")
+
                     }
                     .flatMap {
                         val location = fromPath("/appointments/{id}").buildAndExpand(it.id).toUri()

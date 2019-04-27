@@ -6,6 +6,7 @@ import com.example.repository.AppointmentRepository
 import com.example.service.EmailService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.nhaarman.mockitokotlin2.argumentCaptor
+import com.nhaarman.mockitokotlin2.mock
 import io.kotlintest.specs.StringSpec
 import io.kotlintest.tables.row
 import io.kotlintest.data.forall
@@ -15,9 +16,9 @@ import io.restassured.RestAssured.given
 import org.flywaydb.core.Flyway
 import org.hamcrest.Matchers.*
 import org.mockito.Mockito.*
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import java.time.LocalDateTime.now
@@ -27,7 +28,7 @@ class AppointmentPostIT(val mapper: ObjectMapper,
                         val emailService: EmailService,
                         val appointmentRepository: AppointmentRepository,
                         flyway: Flyway,
-                        @Value("\${local.server.port}") port: String) : StringSpec() {
+                        @LocalServerPort port: String) : StringSpec() {
 
     init {
         RestAssured.port = port.toInt()
@@ -84,7 +85,7 @@ class AppointmentPostIT(val mapper: ObjectMapper,
             }
         }
 
-        "should send an email tp patient" {
+        "should send an email to patient" {
             given()
                     .basePath("/api")
                     .contentType("application/json")
@@ -116,7 +117,7 @@ class AppointmentPostIT(val mapper: ObjectMapper,
         @Configuration
         internal class ContextConfiguration {
             @Bean
-            fun emailService() = mock(EmailService::class.java)
+            fun emailService(): EmailService = mock()
         }
     }
 }
