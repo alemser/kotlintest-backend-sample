@@ -1,15 +1,12 @@
 ## Sample Appointments Application
 
 A 'Appointments' sample application is given as starting point for the Medium story 
-_Performing good integration tests against your REST API_.
+_Integration tests — an approach for the REST API_.
  
 
 The master branch has no tests, ideal if you want to try out while reading the story. 
 
 The complete branch, well, is complete. 
-
-The application has been written using Spring WebFlux - as a way to try to teach myself the newer non blocking programming 
-model of Spring. 
 
 > Please, don't consider this sample as template, as it lacks some good practices for the sake of "simplicity".
 
@@ -22,7 +19,7 @@ model of Spring.
 
 If you are not familiar with the Gradle build tool, it's just like maven. Open it like you use to open a maven project.
 
-If the preference is not to use an IDE, run './gradlew' (Linux/Mac) or 'gradlew.bat' (Windows) to perform a complete build. 
+If the preference is not to use an IDE, run './gradlew' (Linux/Mac) or 'gradlew' (Windows) to perform a complete build. 
 
 It will download the right version of Gradle.
 
