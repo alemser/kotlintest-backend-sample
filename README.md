@@ -1,3 +1,6 @@
+**update**
+2022-03-10: bump in library versions
+
 ## Sample Appointments Application
 
 A 'Appointments' sample application is given as starting point for the Medium story 

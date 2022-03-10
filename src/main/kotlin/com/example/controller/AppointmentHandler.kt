@@ -7,13 +7,13 @@ import com.example.repository.AppointmentRepository
 import com.example.service.EmailService
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
+import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.ServerResponse.*
-import reactor.core.publisher.Mono
-import reactor.core.publisher.switchIfEmpty
-import java.util.concurrent.CompletableFuture.supplyAsync
 import org.springframework.web.util.UriComponentsBuilder.fromPath
+import reactor.core.publisher.Mono
+import reactor.kotlin.core.publisher.switchIfEmpty
 import java.time.LocalDateTime
-import javax.validation.ConstraintViolationException
+import java.util.concurrent.CompletableFuture.supplyAsync
 import javax.validation.Validator
 
 @Component
@@ -41,13 +41,13 @@ class AppointmentHandler(val repository: AppointmentRepository,
 
     fun update(req: ServerRequest) = req.bodyToMono(Appointment::class.java)
             .map {
-                val id = req.pathVariable("id").toLong()
-                val version = req.headers().header("If-Match")[0].toLong()
-                it.asEntity(id, version)
+                val id = req.pathVariable("id")
+                val version = req.headers().header("If-Match")[0]
+                it.asEntity(id.toLong(), version.toLong())
             }.flatMap {
                 deferAsFuture { repository.save(it) }
             }.flatMap {
-                ok().eTag(it.version.toString()).syncBody(it)
+                ok().eTag(it.version.toString()).bodyValue(it)
             }
 
     fun delete(req: ServerRequest) = Mono.just(req.pathVariable("id"))
@@ -57,15 +57,15 @@ class AppointmentHandler(val repository: AppointmentRepository,
                 ok().build()
             }
 
-    fun findById(req: ServerRequest) = Mono
-            .just(req.pathVariable("id").toLong())
+    fun findById(req: ServerRequest): Mono<ServerResponse> =
+        Mono.just(req.pathVariable("id").toLong())
             .flatMap {
                 deferAsFuture { repository.findById(it) }
             }.flatMap {
                 it.map { e -> Mono.just(e) }.orElseGet { Mono.empty() }
             }
             .flatMap {
-                ok().eTag(it.version.toString()).syncBody(it.asQueryResponse())
+                ok().eTag(it.version.toString()).bodyValue(it.asQueryResponse())
             }
             .switchIfEmpty { notFound().build() }
 
@@ -75,7 +75,7 @@ class AppointmentHandler(val repository: AppointmentRepository,
                 deferAsFuture { repository.findByDate(it) }
             }
             .flatMap {
-                ok().syncBody( it.map { a -> a.asQueryResponse() } )
+                ok().bodyValue( it.map { a -> a.asQueryResponse() } )
             }
 
     fun <T> deferAsFuture(fn: () -> T): Mono<T> = Mono.defer {
