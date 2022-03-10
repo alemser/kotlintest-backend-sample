@@ -24,7 +24,7 @@ class ExceptionHandler : WebFilter {
     override fun filter(exchange: ServerWebExchange, chain: WebFilterChain) =
         chain
                 .filter(exchange)
-                .compose { call -> call.onErrorResume {
+                .transformDeferred { call -> call.onErrorResume {
                     it.printStackTrace()
                         val response = exchange.response
                         response.statusCode = HttpStatus.BAD_REQUEST

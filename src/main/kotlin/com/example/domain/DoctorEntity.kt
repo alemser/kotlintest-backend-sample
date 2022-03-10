@@ -9,8 +9,8 @@ data class DoctorEntity(
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         val id: Long? = null,
 
-        val name: String,
+        val name: String? = null,
 
         @Version
-        val version: Long
+        val version: Long? = null
 )

@@ -1,16 +1,16 @@
 package com.example.appointments
 
-import com.example.Application
+import com.example.ExampleApplication
 import com.example.controller.data.Appointment
 import com.example.repository.AppointmentRepository
 import com.example.service.EmailService
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.nhaarman.mockitokotlin2.argumentCaptor
 import com.nhaarman.mockitokotlin2.mock
-import io.kotlintest.specs.StringSpec
-import io.kotlintest.tables.row
-import io.kotlintest.data.forall
-import io.kotlintest.shouldBe
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.data.forAll
+import io.kotest.data.row
+import io.kotest.matchers.shouldBe
 import io.restassured.RestAssured
 import io.restassured.RestAssured.given
 import org.flywaydb.core.Flyway
@@ -21,9 +21,10 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDO
 import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.testcontainers.containers.PostgreSQLContainer
 import java.time.LocalDateTime.now
 
-@SpringBootTest(classes = [Application::class], webEnvironment = RANDOM_PORT)
+@SpringBootTest(classes = [ExampleApplication::class], webEnvironment = RANDOM_PORT)
 class AppointmentPostIT(val mapper: ObjectMapper,
                         val emailService: EmailService,
                         val appointmentRepository: AppointmentRepository,
@@ -31,13 +32,15 @@ class AppointmentPostIT(val mapper: ObjectMapper,
                         @LocalServerPort port: String) : StringSpec() {
 
     init {
+        var pgContainer = PostgreSQLContainer<Nothing>("postgres:alpine")
+        pgContainer.start()
         RestAssured.port = port.toInt()
         RestAssured.baseURI = "http://localhost"
 
         val locationIdRegex = """(?<=\/)([^\/]+)${'$'}""".toRegex()
 
         "should create a new appointment" {
-            forall (
+            forAll (
                    row(goodApointment, 201,"", arrayOf("Location", "ETag")),
                    row(badEmailApointment, 400,"constraint [email]", arrayOf()),
                    row(badDoctorApointment, 400,"Unable to find", arrayOf())
@@ -68,7 +71,7 @@ class AppointmentPostIT(val mapper: ObjectMapper,
 
                     val match = locationIdRegex.find(response.header("Location"))
                     val id = match?.value
-                    val storedAppointment = appointmentRepository.getOne(id?.toLong()!!)
+                    val storedAppointment = appointmentRepository.getById(id?.toLong()!!)
                     with(storedAppointment) {
                         date shouldBe appointment.date
                         email shouldBe appointment.email

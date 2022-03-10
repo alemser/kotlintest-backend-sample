@@ -1,11 +1,11 @@
 package com.example.appointments
 
-import com.example.Application
-import io.kotlintest.specs.StringSpec
-import io.kotlintest.tables.row
-import io.kotlintest.data.forall
+import com.example.ExampleApplication
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.data.row
+import io.kotest.data.forAll
 import io.restassured.RestAssured
-import io.restassured.RestAssured.given
+import io.restassured.RestAssured.*
 import org.hamcrest.Matchers.*
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -13,15 +13,15 @@ import org.springframework.boot.web.server.LocalServerPort
 import java.time.LocalDateTime
 import java.time.LocalDateTime.now
 
-@SpringBootTest(classes = [Application::class], webEnvironment = RANDOM_PORT)
+@SpringBootTest(classes = [ExampleApplication::class], webEnvironment = RANDOM_PORT)
 class AppointmentGetIT(@LocalServerPort port: String) : StringSpec() {
 
     init {
         RestAssured.port = port.toInt()
-        RestAssured.baseURI = "http://localhost"
+        baseURI = "http://localhost"
 
         "should get appointments by id" {
-            forall (
+            forAll (
                    row(1, -1,200, "Robert Smith", true, "John Smith"),
                    row(99, 0, 404, null, null, null),
                    row(1, 0, 304, null, null, null)
@@ -50,19 +50,27 @@ class AppointmentGetIT(@LocalServerPort port: String) : StringSpec() {
         "should get appointments by date" {
             val someDate = LocalDateTime.of(2019, 1,1, 1,0,0,0);
 
-            forall (
+            forAll (
                     row(someDate, 200, 3, arrayOf("Robert Smith", "Another patient", "David Bowie")),
                     row(now(), 200, 4, arrayOf("Lou Reed", "Another patient 2", "David Gilmour", "Reger Waters")),
                     row(now().plusDays(1), 200, 0, arrayOf())
             ) { date, expStatus, expNumElements, expNames ->
+                given()
+                    .basePath("/api")
+                    .contentType("application/json")
+                .`when`()
+                    .get("/appointments?date=$date")
+                .then()
+                    .statusCode(expStatus)
+
 
                 val response =
                         given()
                                 .basePath("/api")
                                 .contentType("application/json")
-                                .`when`()
+                            .`when`()
                                 .get("/appointments?date=$date")
-                                .then()
+                            .then()
                                 .statusCode(expStatus)
 
                 if (expStatus == 200) {

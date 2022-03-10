@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DBURL}
-    username: ${DBPASS}
-    password: ${DBUSER}
+    url: jdbc:postgresql://my-instance.ckhiau6owruk.us-east-1.rds.amazonaws.com:5432/test
+    username: postgres
+    password: postgres
     hikari:
       maximum-pool-size: 4
   jpa:
